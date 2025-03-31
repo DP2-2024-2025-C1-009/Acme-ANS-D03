@@ -38,3 +38,10 @@
 		<acme:footer-copyright code="master.company.name"/>
 	</acme:footer-logo>
 </acme:footer-panel>
+
+<jstl:if test="${service != null}">
+	<div class="panel-body" style="margin: 1em 0em 1em 0em; text-align: center;">	
+		<img src="${service.photoLink}" class="img-fluid rounded" style="border-style: solid; max-width: 200px; height: auto;"/>
+	</div>
+</jstl:if>
+

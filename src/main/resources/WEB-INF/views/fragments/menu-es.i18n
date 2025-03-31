@@ -18,6 +18,11 @@ master.menu.anonymous.favourite-link-jesmarde2 = 49160644F: Martín de Acuña, J
 master.menu.anonymous.favourite-link-cargalrod2 = 49193968G: Gallero Rodríguez, Carlos
 master.menu.anonymous.favoutite-link-riccarmar = 80230334D: Carreño Mariño, Ricardo
 
+# master.menu.any #######################################################
+
+master.menu.any = Para todos los usuarios
+master.menu.any.services = Servicios
+
 # master.menu.administrator ###################################################
 
 master.menu.administrator = Administrador
