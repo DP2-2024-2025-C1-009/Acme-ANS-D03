@@ -14,7 +14,7 @@ import acme.client.components.validation.Optional;
 import acme.client.components.validation.ValidMoney;
 import acme.client.components.validation.ValidNumber;
 import acme.client.components.validation.ValidString;
-import acme.constraints.ValidFlightCrewMember;
+import acme.constraints.ValidIdentifier;
 import acme.entities.airline.Airline;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +22,6 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@ValidFlightCrewMember
 public class FlightCrewMember extends AbstractRole {
 
 	// Serialisation version --------------------------------------------------
@@ -32,17 +31,17 @@ public class FlightCrewMember extends AbstractRole {
 	// Attributes -------------------------------------------------------------
 
 	@Mandatory
-	@ValidString(pattern = "^[A-Z]{2,3}\\d{6}$", message = "Formato inválido.")
+	@ValidIdentifier //terminar
 	@Column(unique = true)
 	private String					employeeCode;
 
 	@Mandatory
-	@ValidString(pattern = "^\\+?\\d{6,15}$", message = "Formato inválido.")
+	@ValidString(pattern = "^\\+?\\d{6,15}$")
 	@Automapped
 	private String					phoneNumber;
 
 	@Mandatory
-	@ValidString(min = 1, max = 255)
+	@ValidString(min = 20, max = 255)
 	@Automapped
 	private String					languageSkills;
 
@@ -52,7 +51,12 @@ public class FlightCrewMember extends AbstractRole {
 	private FlightCrewMemberStatus	flightCrewMemberStatus;
 
 	@Mandatory
-	@ValidMoney(min = 0, max = 1000000)
+	@Valid
+	@ManyToOne(optional = false)
+	private Airline					airline;
+
+	@Mandatory
+	@ValidMoney()
 	@Automapped
 	private Money					salary;
 
@@ -60,10 +64,5 @@ public class FlightCrewMember extends AbstractRole {
 	@ValidNumber(min = 0, max = 120)
 	@Automapped
 	private Integer					yearsOfExperience;
-
-	@Mandatory
-	@Valid
-	@ManyToOne(optional = false)
-	private Airline					airline;
 
 }

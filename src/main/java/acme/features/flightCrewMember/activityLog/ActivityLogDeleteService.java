@@ -3,7 +3,6 @@ package acme.features.flightCrewMember.activityLog;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
-import acme.client.components.models.Dataset;
 import acme.client.services.AbstractGuiService;
 import acme.client.services.GuiService;
 import acme.entities.activityLog.ActivityLog;
@@ -18,14 +17,8 @@ public class ActivityLogDeleteService extends AbstractGuiService<FlightCrewMembe
 
 	@Override
 	public void authorise() {
-		int id = super.getRequest().getData("id", int.class);
-		ActivityLog log = this.ActivityLogRepository.findActivityLogById(id);
-
-		boolean correctCrew = log != null && log.getActivityLogAssignment().getCrewMember().getId() == super.getRequest().getPrincipal().getActiveRealm().getId();
-
-		boolean isDraft = log != null && log.getDraftMode();
-
-		super.getResponse().setAuthorised(correctCrew && isDraft);
+		boolean isFlightCrew = super.getRequest().getPrincipal().hasRealmOfType(FlightCrewMember.class);
+		super.getResponse().setAuthorised(isFlightCrew);
 	}
 
 	@Override
@@ -36,25 +29,13 @@ public class ActivityLogDeleteService extends AbstractGuiService<FlightCrewMembe
 	}
 
 	@Override
-	public void bind(final ActivityLog log) {
-		super.bindObject(log, "registrationMoment", "incidentType", "description", "severityLevel");
-	}
-
-	@Override
 	public void validate(final ActivityLog log) {
+		super.state(log.getDraftMode(), "*", "activity-log.error.cannot-delete-published");
 	}
 
 	@Override
 	public void perform(final ActivityLog log) {
 		this.ActivityLogRepository.delete(log);
-	}
-
-	@Override
-	public void unbind(final ActivityLog log) {
-		Dataset data = super.unbindObject(log, "registrationMoment", "incidentType", "description", "severityLevel", "draftMode");
-		data.put("assignmentId", log.getActivityLogAssignment().getId());
-		data.put("draftMode", log.getActivityLogAssignment().getDraftMode());
-		super.getResponse().addData(data);
 	}
 
 }

@@ -20,15 +20,8 @@ public class ActivityLogCreateService extends AbstractGuiService<FlightCrewMembe
 
 	@Override
 	public void authorise() {
-		int masterId = super.getRequest().getData("assignmentId", int.class);
-		FlightAssignment assignment = this.ActivityLogRepository.findFlightAssignmentById(masterId);
-
-		boolean isOwner = assignment != null && assignment.getCrewMember().getId() == super.getRequest().getPrincipal().getActiveRealm().getId();
-
-		boolean legHasOccurred = assignment != null && MomentHelper.isPast(assignment.getLeg().getScheduledArrival());
-
-		boolean status = isOwner && legHasOccurred;
-		super.getResponse().setAuthorised(status);
+		boolean authorised = super.getRequest().getPrincipal().hasRealmOfType(FlightCrewMember.class);
+		super.getResponse().setAuthorised(authorised);
 	}
 
 	@Override
@@ -41,7 +34,7 @@ public class ActivityLogCreateService extends AbstractGuiService<FlightCrewMembe
 		FlightAssignment assignment = this.ActivityLogRepository.findFlightAssignmentById(assignmentId);
 		log.setActivityLogAssignment(assignment);
 
-		log.setDraftMode(true);
+		log.setDraftMode(false);
 		super.getBuffer().addData(log);
 	}
 
@@ -51,22 +44,14 @@ public class ActivityLogCreateService extends AbstractGuiService<FlightCrewMembe
 	}
 
 	@Override
-	public void validate(final ActivityLog log) {
-	}
-
-	@Override
 	public void perform(final ActivityLog log) {
 		this.ActivityLogRepository.save(log);
 	}
 
 	@Override
 	public void unbind(final ActivityLog log) {
-		Dataset data = super.unbindObject(log, "incidentType", "description", "severityLevel", "draftMode");
-
-		data.put("assignmentId", log.getActivityLogAssignment().getId());
-		data.put("registrationMoment", log.getRegistrationMoment());
-
+		Dataset data = super.unbindObject(log, "registrationMoment", "incidentType", "description", "severityLevel", "draftMode");
+		data.put("assignmentId", super.getRequest().getData("assignmentId", int.class));
 		super.getResponse().addData(data);
 	}
-
 }
