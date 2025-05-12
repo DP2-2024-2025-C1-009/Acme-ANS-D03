@@ -18,10 +18,8 @@ public class ActivityLogShowService extends AbstractGuiService<FlightCrewMember,
 
 	@Override
 	public void authorise() {
-		int id = super.getRequest().getData("id", int.class);
-		ActivityLog log = this.ActivityLogRepository.findActivityLogById(id);
-		boolean authorised = log != null && (log.getActivityLogAssignment().getCrewMember().getId() == super.getRequest().getPrincipal().getActiveRealm().getId() || !log.getDraftMode());
-		super.getResponse().setAuthorised(authorised);
+		boolean isAuthorised = super.getRequest().getPrincipal().hasRealmOfType(FlightCrewMember.class);
+		super.getResponse().setAuthorised(isAuthorised);
 	}
 
 	@Override
@@ -33,18 +31,11 @@ public class ActivityLogShowService extends AbstractGuiService<FlightCrewMember,
 
 	@Override
 	public void unbind(final ActivityLog log) {
-		Dataset data;
+		Dataset data = super.unbindObject(log, "registrationMoment", "incidentType", "description", "severityLevel", "draftMode");
 
-		var assignment = log.getActivityLogAssignment();
+		boolean isAssignmentInDraft = this.ActivityLogRepository.findFlightAssignmentById(log.getActivityLogAssignment().getId()).getDraftMode();
 
-		boolean correctUser = assignment.getCrewMember().getId() == super.getRequest().getPrincipal().getActiveRealm().getId();
-		boolean showButtons = log.getDraftMode() && correctUser;
-		boolean publishAvailable = correctUser && log.getDraftMode() && !assignment.getDraftMode();
-		data = super.unbindObject(log, "registrationMoment", "incidentType", "description", "severityLevel", "draftMode");
-
-		data.put("masterId", assignment.getId());
-		data.put("buttonsAvailable", showButtons);
-		data.put("publishAvailable", publishAvailable);
+		data.put("draftModeFlightAssignment", isAssignmentInDraft);
 
 		super.getResponse().addData(data);
 	}

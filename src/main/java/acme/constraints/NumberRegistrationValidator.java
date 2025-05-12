@@ -1,8 +1,6 @@
 
 package acme.constraints;
 
-import java.util.Optional;
-
 import javax.validation.ConstraintValidatorContext;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +11,6 @@ import acme.entities.aircraft.Aircraft;
 import acme.features.administrator.aircraft.AircraftRepository;
 
 @Validator
-
 public class NumberRegistrationValidator extends AbstractValidator<ValidNumberRegistration, Aircraft> {
 
 	@Autowired
@@ -21,29 +18,19 @@ public class NumberRegistrationValidator extends AbstractValidator<ValidNumberRe
 
 
 	@Override
-	protected void initialise(final ValidNumberRegistration annotation) {
-		assert annotation != null;
-	}
-
-	@Override
 	public boolean isValid(final Aircraft aircraft, final ConstraintValidatorContext context) {
-		assert context != null;
-
-		if (aircraft == null)
-			return false;
+		if (aircraft == null || aircraft.getNumberRegistration() == null || aircraft.getNumberRegistration().isEmpty())
+			return true;
 
 		String numberRegistration = aircraft.getNumberRegistration();
 
-		if (numberRegistration == null)
-			return false;
+		long count = this.repository.countByNumberRegistration(numberRegistration);
 
-		Optional<Aircraft> aircraftWithSameRegistrationNumber = this.repository.findAircraftByNumberRegistration(numberRegistration);
-		if (aircraftWithSameRegistrationNumber.isPresent() && aircraftWithSameRegistrationNumber.get().getId() != aircraft.getId()) {
-			super.state(context, false, "registrationNumber", "Registration number must be unique" + numberRegistration);
+		if (count > 0) {
+			super.state(context, false, "numberRegistration", "Register number must be unique");
 			return false;
 		}
 
 		return true;
 	}
-
 }
